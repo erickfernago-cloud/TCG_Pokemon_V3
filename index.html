@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi colección · Pokémon TCG 30th Celebration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#e9ecf3; --panel:#ffffff; --ink:#16203a; --muted:#5d6785; --line:#d3d8e6;
+    --cobalt:#2f4bff; --gold:#e3a700; --ok:#1a8a4f;
+    --f:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#101427;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933;--ok:#4fd08a}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);line-height:1.4}
+  header{padding:28px 20px 18px;max-width:1200px;margin:0 auto}
+  h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;margin:0 0 4px;letter-spacing:-.02em}
+  header p{margin:0;color:var(--muted)}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 20px 60px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;position:sticky;top:0;z-index:5;margin-bottom:18px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  button,select,input{font:inherit;color:inherit}
+  .tab{border:1px solid var(--line);background:transparent;padding:7px 12px;border-radius:8px;cursor:pointer}
+  .tab[aria-selected=true]{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+  input[type=search],select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
+  input[type=search]{flex:1 1 160px}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .prog{flex:1 1 100%;display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--muted)}
+  .track{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--cobalt),var(--gold));transition:width .4s}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .card{background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px}
+  .card .img{aspect-ratio:245/342;border-radius:6px;background:var(--bg);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:.8rem;text-align:center}
+  .card img{width:100%;height:100%;object-fit:contain;filter:grayscale(1);opacity:.45;transition:filter .2s,opacity .2s}
+  .card.own{border-color:var(--gold)}
+  .card.own img{filter:none;opacity:1}
+  .card b{font-size:.88rem;font-weight:600;line-height:1.2}
+  .card small{color:var(--muted);font-size:.76rem}
+  .tag{display:inline-block;font-size:.7rem;padding:1px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);align-self:flex-start}
+  .card.own .tag{border-color:var(--gold);color:var(--ink)}
+  .msg{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+  footer{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:.85rem;align-items:center}
+  footer button{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pokémon TCG · 30th Celebration</h1>
+  <p>Tu colección, leída directamente desde el Excel del repositorio.</p>
+</header>
+<div class="wrap">
+  <div class="bar">
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar">
+    <select id="own" aria-label="Filtrar por estado">
+      <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option>
+    </select>
+    <select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select>
+    <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
+  </div>
+  <div id="view"><div class="msg">Cargando el Excel…</div></div>
+  <footer>
+    <span>Toca una carta para marcarla o desmarcarla. Esos cambios quedan solo en este navegador; para hacerlos permanentes, marca «Sí» en el Excel y súbelo de nuevo.</span>
+    <button id="exp">Descargar mis marcas (CSV)</button>
+    <button id="rst">Volver a los datos del Excel</button>
+  </footer>
+</div>
+<script>
+const FILE = "pokemon_tcg_30_aniversario.xlsx";   // debe estar en la misma carpeta que este index.html
+const LS = "tcg30c-marks";
+let data = {}, sheet = "", marks = {};
+try { marks = JSON.parse(localStorage.getItem(LS) || "{}"); } catch(e) {}
+const $ = id => document.getElementById(id);
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(marks)); } catch(e) {} };
+
+function parseSheet(ws){
+  const rg = XLSX.utils.decode_range(ws["!ref"]), heads = [];
+  for (let c = rg.s.c; c <= rg.e.c; c++) heads[c] = (ws[XLSX.utils.encode_cell({r:0,c})] || {}).v;
+  const rows = [];
+  for (let r = 1; r <= rg.e.r; r++){
+    const o = {_img:""};
+    for (let c = rg.s.c; c <= rg.e.c; c++){
+      const cell = ws[XLSX.utils.encode_cell({r,c})];
+      if (heads[c] === "Imagen"){
+        const m = cell && cell.f ? cell.f.match(/IMAGE\("([^"]+)"/) : null;
+        o._img = m ? m[1] : "";
+      } else o[heads[c]] = cell ? cell.v : "";
+    }
+    if (Object.values(o).some(v => v !== "")) rows.push(o);
+  }
+  return rows;
+}
+const nameOf = r => r["Nombre"] || r["Carta"] || "";
+const numOf  = r => r["N.º"] || r["N.º original"] || "";
+const keyOf  = (s, r) => s + "|" + numOf(r) + "|" + nameOf(r);
+const isOwn  = (s, r) => { const k = keyOf(s, r); return k in marks ? marks[k] : r["¿La tengo?"] === "Sí"; };
+
+async function load(){
+  try{
+    const res = await fetch(FILE + "?v=" + Date.now());
+    if (!res.ok) throw new Error("No se encontró " + FILE);
+    const wb = XLSX.read(await res.arrayBuffer(), {type:"array"});
+    wb.SheetNames.filter(n => n !== "Resumen").forEach(n => data[n] = parseSheet(wb.Sheets[n]));
+    sheet = Object.keys(data)[0];
+    buildTabs(); render();
+  }catch(e){
+    $("view").innerHTML = '<div class="msg"><b>No pude cargar el Excel.</b><br>' + e.message +
+      '<br>Comprueba que <code>' + FILE + '</code> esté en el mismo repositorio que este archivo y abre la página desde GitHub Pages (no haciendo doble clic en el archivo).</div>';
+    $("ptxt").textContent = "Sin datos";
+  }
+}
+function buildTabs(){
+  $("tabs").innerHTML = "";
+  Object.keys(data).forEach(n => {
+    const b = document.createElement("button");
+    b.className = "tab"; b.role = "tab"; b.textContent = n;
+    b.onclick = () => { sheet = n; fillRarity(); render(); };
+    $("tabs").appendChild(b);
+  });
+  fillRarity();
+}
+function fillRarity(){
+  const set = [...new Set(data[sheet].map(r => r["Rareza"]).filter(Boolean))];
+  $("rar").innerHTML = '<option value="">Todas las rarezas</option>' + set.map(x => `<option>${x}</option>`).join("");
+  $("rar").style.display = set.length ? "" : "none";
+}
+function render(){
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.textContent === sheet));
+  const rows = data[sheet], q = $("q").value.trim().toLowerCase(), f = $("own").value, rar = $("rar").value;
+  const own = rows.filter(r => isOwn(sheet, r)).length;
+  $("ptxt").textContent = `${sheet}: ${own} de ${rows.length} (${rows.length ? Math.round(own/rows.length*100) : 0}%)`;
+  $("pfill").style.width = (rows.length ? own/rows.length*100 : 0) + "%";
+  const list = rows.filter(r => {
+    const o = isOwn(sheet, r);
+    return (f === "all" || (f === "yes") === o) && (!rar || r["Rareza"] === rar) &&
+      (!q || (nameOf(r) + " " + numOf(r)).toLowerCase().includes(q));
+  });
+  const g = document.createElement("div"); g.className = "grid";
+  if (!list.length) g.innerHTML = '<div class="msg">Ninguna carta coincide con estos filtros.</div>';
+  list.forEach(r => {
+    const o = isOwn(sheet, r), b = document.createElement("button");
+    b.className = "card" + (o ? " own" : ""); b.setAttribute("aria-pressed", o);
+    b.innerHTML = `<div class="img">${r._img ? `<img loading="lazy" alt="" src="${r._img}" onerror="this.replaceWith('Sin imagen')">` : "Sin imagen"}</div>
+      <b>${nameOf(r)}</b><small>${numOf(r)}</small>${r["Rareza"] ? `<span class="tag">${r["Rareza"]}</span>` : ""}`;
+    b.onclick = () => { marks[keyOf(sheet, r)] = !isOwn(sheet, r); save(); render(); };
+    g.appendChild(b);
+  });
+  $("view").replaceChildren(g);
+}
+["q","own","rar"].forEach(id => $(id).addEventListener("input", render));
+$("rst").onclick = () => { if (confirm("¿Borrar los cambios hechos en este navegador y volver a lo que dice el Excel?")){ marks = {}; save(); render(); } };
+$("exp").onclick = () => {
+  const lines = ["Hoja,N.º,Carta,Tengo"];
+  Object.keys(data).forEach(s => data[s].forEach(r => lines.push([s, numOf(r), '"' + nameOf(r).replace(/"/g,'""') + '"', isOwn(s, r) ? "Sí" : "No"].join(","))));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], {type:"text/csv"}));
+  a.download = "mis-marcas-30c.csv"; a.click();
+};
+load();
+</script>
+</body>
+</html>
