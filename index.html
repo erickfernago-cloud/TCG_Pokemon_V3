@@ -6,7 +6,6 @@
 <title>Mi colección · Pokémon TCG 30th Celebration</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --bg:#e9ecf3; --panel:#ffffff; --ink:#16203a; --muted:#5d6785; --line:#d3d8e6;
@@ -51,7 +50,7 @@
 <body>
 <header>
   <h1>Pokémon TCG · 30th Celebration</h1>
-  <p>Tu colección, leída directamente desde el Excel del repositorio.</p>
+  <p>Tu colección, leída en vivo desde tu Google Sheet.</p>
 </header>
 <div class="wrap">
   <div class="bar">
@@ -65,35 +64,47 @@
   </div>
   <div id="view"><div class="msg">Cargando el Excel…</div></div>
   <footer>
-    <span>Toca una carta para marcarla o desmarcarla. Esos cambios quedan solo en este navegador; para hacerlos permanentes, marca «Sí» en el Excel y súbelo de nuevo.</span>
+    <span>Toca una carta para marcarla o desmarcarla. Esos cambios quedan solo en este navegador; para hacerlos permanentes, marca «Sí» en tu Google Sheet; la página lo leerá al recargar.</span>
     <button id="exp">Descargar mis marcas (CSV)</button>
     <button id="rst">Volver a los datos del Excel</button>
   </footer>
 </div>
 <script>
-const FILE = "pokemon_tcg_30_aniversario.xlsx";   // debe estar en la misma carpeta que este index.html
+const SHEET_ID = "1c7Pi28O-4_xjqelw3KXdLaXG6XUiWvF3";   // ID de tu Google Sheet
+const SHEETS = ["Set principal", "Secretas", "Classic Collection", "Energías"];
+const IMG = c => `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_${c}_R_EN_SM.png`;
 const LS = "tcg30c-marks";
 let data = {}, sheet = "", marks = {};
 try { marks = JSON.parse(localStorage.getItem(LS) || "{}"); } catch(e) {}
 const $ = id => document.getElementById(id);
 const save = () => { try { localStorage.setItem(LS, JSON.stringify(marks)); } catch(e) {} };
 
-function parseSheet(ws){
-  const rg = XLSX.utils.decode_range(ws["!ref"]), heads = [];
-  for (let c = rg.s.c; c <= rg.e.c; c++) heads[c] = (ws[XLSX.utils.encode_cell({r:0,c})] || {}).v;
-  const rows = [];
-  for (let r = 1; r <= rg.e.r; r++){
-    const o = {_img:""};
-    for (let c = rg.s.c; c <= rg.e.c; c++){
-      const cell = ws[XLSX.utils.encode_cell({r,c})];
-      if (heads[c] === "Imagen"){
-        const m = cell && cell.f ? cell.f.match(/IMAGE\("([^"]+)"/) : null;
-        o._img = m ? m[1] : "";
-      } else o[heads[c]] = cell ? cell.v : "";
-    }
-    if (Object.values(o).some(v => v !== "")) rows.push(o);
+function csv(t){
+  const out=[]; let row=[], f="", q=false;
+  for (let i=0;i<t.length;i++){
+    const c=t[i];
+    if (q){ if (c==='"'){ if (t[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else if (c==='"') q=true;
+    else if (c===","){ row.push(f); f=""; }
+    else if (c==="\n"){ row.push(f); out.push(row); row=[]; f=""; }
+    else if (c!=="\r") f+=c;
   }
-  return rows;
+  if (f!==""||row.length){ row.push(f); out.push(row); }
+  return out;
+}
+function imgFor(sheetName, r, i){
+  if (sheetName==="Classic Collection") return IMG("CC"+(i+1));
+  const n=String(r["N.º"]||"");
+  if (n.endsWith("/128")) return IMG(n.split("/")[0]);
+  if (n.endsWith("/RGB")) return IMG(n.split("/")[0]);
+  return "";
+}
+function parseSheet(name, text){
+  const t = csv(text), heads = t[0] || [];
+  return t.slice(1).map((cells,i)=>{
+    const o={}; heads.forEach((h,c)=>o[h]=cells[c]||"");
+    o._img=imgFor(name,o,i); return o;
+  }).filter(o=>Object.values(o).some(v=>v!==""));
 }
 const nameOf = r => r["Nombre"] || r["Carta"] || "";
 const numOf  = r => r["N.º"] || r["N.º original"] || "";
@@ -102,15 +113,17 @@ const isOwn  = (s, r) => { const k = keyOf(s, r); return k in marks ? marks[k] :
 
 async function load(){
   try{
-    const res = await fetch(FILE + "?v=" + Date.now());
-    if (!res.ok) throw new Error("No se encontró " + FILE);
-    const wb = XLSX.read(await res.arrayBuffer(), {type:"array"});
-    wb.SheetNames.filter(n => n !== "Resumen").forEach(n => data[n] = parseSheet(wb.Sheets[n]));
-    sheet = Object.keys(data)[0];
+    for (const n of SHEETS){
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(n)}&_=${Date.now()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Google respondió " + res.status + " al pedir la hoja «" + n + "».");
+      data[n] = parseSheet(n, await res.text());
+    }
+    sheet = SHEETS[0];
     buildTabs(); render();
   }catch(e){
-    $("view").innerHTML = '<div class="msg"><b>No pude cargar el Excel.</b><br>' + e.message +
-      '<br>Comprueba que <code>' + FILE + '</code> esté en el mismo repositorio que este archivo y abre la página desde GitHub Pages (no haciendo doble clic en el archivo).</div>';
+    $("view").innerHTML = '<div class="msg"><b>No pude leer tu Google Sheet.</b><br>' + e.message +
+      '<br>Para que funcione, el archivo debe ser una hoja de cálculo de Google (no un .xlsx subido a Drive) y estar compartido como «Cualquier persona con el enlace: Lector». Abre la página desde GitHub Pages, no con doble clic.</div>';
     $("ptxt").textContent = "Sin datos";
   }
 }
