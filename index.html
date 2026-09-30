@@ -3,178 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mi colección · Pokémon TCG 30th Celebration</title>
+<title>Pokémon TCG · 30th Celebration · Bienvenido</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#e9ecf3; --panel:#ffffff; --ink:#16203a; --muted:#5d6785; --line:#d3d8e6;
-    --cobalt:#2f4bff; --gold:#e3a700; --ok:#1a8a4f;
-    --f:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;
-  }
-  @media (prefers-color-scheme:dark){
-    :root{--bg:#101427;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933;--ok:#4fd08a}
-  }
+  :root{--bg:#e9ecf3;--panel:#fff;--ink:#16203a;--muted:#5d6785;--line:#d3d8e6;--cobalt:#2f4bff;--gold:#e3a700;
+        --f:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
+  @media (prefers-color-scheme:dark){:root{--bg:#101427;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933}}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);line-height:1.4}
-  header{padding:28px 20px 18px;max-width:1200px;margin:0 auto}
-  h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;margin:0 0 4px;letter-spacing:-.02em}
-  header p{margin:0;color:var(--muted)}
-  .wrap{max-width:1200px;margin:0 auto;padding:0 20px 60px}
-  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;position:sticky;top:0;z-index:5;margin-bottom:18px}
-  .tabs{display:flex;gap:6px;flex-wrap:wrap}
-  button,select,input{font:inherit;color:inherit}
-  .tab{border:1px solid var(--line);background:transparent;padding:7px 12px;border-radius:8px;cursor:pointer}
-  .tab[aria-selected=true]{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
-  input[type=search],select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
-  input[type=search]{flex:1 1 160px}
-  :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-  .prog{flex:1 1 100%;display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--muted)}
-  .track{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden}
-  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--cobalt),var(--gold));transition:width .4s}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
-  .card{background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px}
-  .card .img{aspect-ratio:245/342;border-radius:6px;background:var(--bg);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:.8rem;text-align:center}
-  .card img{width:100%;height:100%;object-fit:contain;filter:grayscale(1);opacity:.45;transition:filter .2s,opacity .2s}
-  .card.own{border-color:var(--gold)}
-  .card.own img{filter:none;opacity:1}
-  .card b{font-size:.88rem;font-weight:600;line-height:1.2}
-  .card small{color:var(--muted);font-size:.76rem}
-  .tag{display:inline-block;font-size:.7rem;padding:1px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);align-self:flex-start}
-  .card.own .tag{border-color:var(--gold);color:var(--ink)}
-  .msg{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
-  footer{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:.85rem;align-items:center}
-  footer button{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px;cursor:pointer}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f);line-height:1.5;display:grid;place-items:center;padding:32px 20px}
+  main{max-width:980px;width:100%;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
+  .tag{display:inline-block;font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  h1{font-size:clamp(2.2rem,6vw,3.8rem);font-weight:800;line-height:1.02;letter-spacing:-.03em;margin:0 0 16px}
+  h1 span{background:linear-gradient(90deg,var(--cobalt),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  p.lead{font-size:1.1rem;color:var(--muted);margin:0 0 24px;max-width:46ch}
+  .cta{display:inline-block;background:var(--cobalt);color:#fff;text-decoration:none;font-weight:600;padding:14px 26px;border-radius:10px;font-size:1.05rem;transition:transform .15s}
+  .cta:hover{transform:translateY(-2px)}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px;padding:0;list-style:none}
+  .stats li{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:.85rem;color:var(--muted)}
+  .stats b{display:block;font-size:1.3rem;color:var(--ink)}
+  .fan{position:relative;height:380px}
+  .fan img{position:absolute;width:48%;top:50%;left:50%;border-radius:10px;box-shadow:0 14px 30px rgba(10,15,40,.35);transform-origin:50% 120%}
+  .fan img:nth-child(1){transform:translate(-50%,-50%) rotate(-14deg) translateX(-55%)}
+  .fan img:nth-child(2){transform:translate(-50%,-55%) rotate(0deg);z-index:2}
+  .fan img:nth-child(3){transform:translate(-50%,-50%) rotate(14deg) translateX(55%)}
+  @media (max-width:760px){main{grid-template-columns:1fr;gap:10px}.fan{height:300px;order:-1}}
+  @media (prefers-reduced-motion:reduce){.cta{transition:none}}
 </style>
 </head>
 <body>
-<header>
-  <h1>Pokémon TCG · 30th Celebration</h1>
-  <p>Tu colección, leída en vivo desde tu Google Sheet.</p>
-</header>
-<div class="wrap">
-  <div class="bar">
-    <div class="tabs" id="tabs" role="tablist"></div>
-    <input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar">
-    <select id="own" aria-label="Filtrar por estado">
-      <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option>
-    </select>
-    <select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select>
-    <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
+<main>
+  <section>
+    <span class="tag">30 años · 1996–2026</span>
+    <h1>Pokémon TCG <span>30th Celebration</span></h1>
+    <p class="lead">Lleva el control de tu colección: qué cartas ya tienes, cuáles te faltan y cuánto llevas completado, con imagen de cada una.</p>
+    <a class="cta" href="coleccion.html">Entrar a mi colección →</a>
+    <ul class="stats" aria-label="Contenido del set">
+      <li><b>128</b>set principal</li>
+      <li><b>33</b>secretas</li>
+      <li><b>30</b>Classic Collection</li>
+      <li><b>8</b>energías</li>
+    </ul>
+  </section>
+  <div class="fan" aria-hidden="true">
+    <img alt="" src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_157_R_EN_SM.png" onerror="this.remove()">
+    <img alt="" src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_149_R_EN_SM.png" onerror="this.remove()">
+    <img alt="" src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_158_R_EN_SM.png" onerror="this.remove()">
   </div>
-  <div id="view"><div class="msg">Cargando el Excel…</div></div>
-  <footer>
-    <span>Toca una carta para marcarla o desmarcarla. Esos cambios quedan solo en este navegador; para hacerlos permanentes, marca «Sí» en tu Google Sheet; la página lo leerá al recargar.</span>
-    <button id="exp">Descargar mis marcas (CSV)</button>
-    <button id="rst">Volver a los datos del Excel</button>
-  </footer>
-</div>
-<script>
-const SHEET_ID = "1c7Pi28O-4_xjqelw3KXdLaXG6XUiWvF3";   // ID de tu Google Sheet
-const SHEETS = ["Set principal", "Secretas", "Classic Collection", "Energías"];
-const IMG = c => `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_${c}_R_EN_SM.png`;
-const LS = "tcg30c-marks";
-let data = {}, sheet = "", marks = {};
-try { marks = JSON.parse(localStorage.getItem(LS) || "{}"); } catch(e) {}
-const $ = id => document.getElementById(id);
-const save = () => { try { localStorage.setItem(LS, JSON.stringify(marks)); } catch(e) {} };
-
-function csv(t){
-  const out=[]; let row=[], f="", q=false;
-  for (let i=0;i<t.length;i++){
-    const c=t[i];
-    if (q){ if (c==='"'){ if (t[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
-    else if (c==='"') q=true;
-    else if (c===","){ row.push(f); f=""; }
-    else if (c==="\n"){ row.push(f); out.push(row); row=[]; f=""; }
-    else if (c!=="\r") f+=c;
-  }
-  if (f!==""||row.length){ row.push(f); out.push(row); }
-  return out;
-}
-function imgFor(sheetName, r, i){
-  if (sheetName==="Classic Collection") return IMG("CC"+(i+1));
-  const n=String(r["N.º"]||"");
-  if (n.endsWith("/128")) return IMG(n.split("/")[0]);
-  if (n.endsWith("/RGB")) return IMG(n.split("/")[0]);
-  return "";
-}
-function parseSheet(name, text){
-  const t = csv(text), heads = t[0] || [];
-  return t.slice(1).map((cells,i)=>{
-    const o={}; heads.forEach((h,c)=>o[h]=cells[c]||"");
-    o._img=imgFor(name,o,i); return o;
-  }).filter(o=>Object.values(o).some(v=>v!==""));
-}
-const nameOf = r => r["Nombre"] || r["Carta"] || "";
-const numOf  = r => r["N.º"] || r["N.º original"] || "";
-const keyOf  = (s, r) => s + "|" + numOf(r) + "|" + nameOf(r);
-const isOwn  = (s, r) => { const k = keyOf(s, r); return k in marks ? marks[k] : r["¿La tengo?"] === "Sí"; };
-
-async function load(){
-  try{
-    for (const n of SHEETS){
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(n)}&_=${Date.now()}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Google respondió " + res.status + " al pedir la hoja «" + n + "».");
-      data[n] = parseSheet(n, await res.text());
-    }
-    sheet = SHEETS[0];
-    buildTabs(); render();
-  }catch(e){
-    $("view").innerHTML = '<div class="msg"><b>No pude leer tu Google Sheet.</b><br>' + e.message +
-      '<br>Para que funcione, el archivo debe ser una hoja de cálculo de Google (no un .xlsx subido a Drive) y estar compartido como «Cualquier persona con el enlace: Lector». Abre la página desde GitHub Pages, no con doble clic.</div>';
-    $("ptxt").textContent = "Sin datos";
-  }
-}
-function buildTabs(){
-  $("tabs").innerHTML = "";
-  Object.keys(data).forEach(n => {
-    const b = document.createElement("button");
-    b.className = "tab"; b.role = "tab"; b.textContent = n;
-    b.onclick = () => { sheet = n; fillRarity(); render(); };
-    $("tabs").appendChild(b);
-  });
-  fillRarity();
-}
-function fillRarity(){
-  const set = [...new Set(data[sheet].map(r => r["Rareza"]).filter(Boolean))];
-  $("rar").innerHTML = '<option value="">Todas las rarezas</option>' + set.map(x => `<option>${x}</option>`).join("");
-  $("rar").style.display = set.length ? "" : "none";
-}
-function render(){
-  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.textContent === sheet));
-  const rows = data[sheet], q = $("q").value.trim().toLowerCase(), f = $("own").value, rar = $("rar").value;
-  const own = rows.filter(r => isOwn(sheet, r)).length;
-  $("ptxt").textContent = `${sheet}: ${own} de ${rows.length} (${rows.length ? Math.round(own/rows.length*100) : 0}%)`;
-  $("pfill").style.width = (rows.length ? own/rows.length*100 : 0) + "%";
-  const list = rows.filter(r => {
-    const o = isOwn(sheet, r);
-    return (f === "all" || (f === "yes") === o) && (!rar || r["Rareza"] === rar) &&
-      (!q || (nameOf(r) + " " + numOf(r)).toLowerCase().includes(q));
-  });
-  const g = document.createElement("div"); g.className = "grid";
-  if (!list.length) g.innerHTML = '<div class="msg">Ninguna carta coincide con estos filtros.</div>';
-  list.forEach(r => {
-    const o = isOwn(sheet, r), b = document.createElement("button");
-    b.className = "card" + (o ? " own" : ""); b.setAttribute("aria-pressed", o);
-    b.innerHTML = `<div class="img">${r._img ? `<img loading="lazy" alt="" src="${r._img}" onerror="this.replaceWith('Sin imagen')">` : "Sin imagen"}</div>
-      <b>${nameOf(r)}</b><small>${numOf(r)}</small>${r["Rareza"] ? `<span class="tag">${r["Rareza"]}</span>` : ""}`;
-    b.onclick = () => { marks[keyOf(sheet, r)] = !isOwn(sheet, r); save(); render(); };
-    g.appendChild(b);
-  });
-  $("view").replaceChildren(g);
-}
-["q","own","rar"].forEach(id => $(id).addEventListener("input", render));
-$("rst").onclick = () => { if (confirm("¿Borrar los cambios hechos en este navegador y volver a lo que dice el Excel?")){ marks = {}; save(); render(); } };
-$("exp").onclick = () => {
-  const lines = ["Hoja,N.º,Carta,Tengo"];
-  Object.keys(data).forEach(s => data[s].forEach(r => lines.push([s, numOf(r), '"' + nameOf(r).replace(/"/g,'""') + '"', isOwn(s, r) ? "Sí" : "No"].join(","))));
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], {type:"text/csv"}));
-  a.download = "mis-marcas-30c.csv"; a.click();
-};
-load();
-</script>
+</main>
 </body>
 </html>
