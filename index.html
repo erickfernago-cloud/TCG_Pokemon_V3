@@ -51,6 +51,13 @@
   .map{width:100%;height:320px;border:1px solid var(--line);border-radius:12px;display:block;background:var(--panel)}
   .maplink{display:inline-block;margin-top:8px;color:var(--cobalt);font-size:.9rem}
   @media (max-width:760px){.opts{grid-template-columns:1fr}.map{height:260px}}
+  .perks{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:6px;max-width:46ch;color:var(--ink)}
+  .opts{grid-template-columns:repeat(3,1fr)}
+  a.opt.wa{display:block;text-decoration:none;color:#fff;background:#1fa855;border-color:#1fa855;transition:transform .15s}
+  a.opt.wa p{color:#fff}
+  a.opt.wa:hover{transform:translateY(-2px)}
+  @media (max-width:900px){.opts{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){a.opt.wa{transition:none}}
 </style>
 </head>
 <body>
@@ -58,8 +65,14 @@
   <section>
     <span class="tag">30 años · 1996–2026</span>
     <h1>Pokémon TCG <span>30th Celebration</span></h1>
-    <p class="lead">Lleva el control de tu colección: qué cartas ya tienes, cuáles te faltan y cuánto llevas completado, con imagen de cada una.</p>
-    <a class="cta" href="coleccion.html">Ver la colección →</a>
+    <p class="lead">Aquí podrás revisar mi catálogo de cartas Pokémon disponibles para venta, compra o intercambio, de una manera simple y ordenada.</p>
+    <ul class="perks">
+      <li>🔎 Busca las cartas que necesitas para tu colección.</li>
+      <li>💰 Vende o publica las cartas que ya no necesitas.</li>
+      <li>🔄 Cambia tus repetidas por aquellas que te faltan.</li>
+      <li>❤️ Colecciona y disfruta el mundo Pokémon a tu manera.</li>
+    </ul>
+    <a class="cta" href="coleccion.html">Ver colecciones →</a>
     <ul class="stats" aria-label="Contenido del set">
       <li><b>128</b>set principal</li>
       <li><b>33</b>secretas</li>
@@ -77,6 +90,7 @@
     <div class="opts">
       <div class="opt"><h3>📍 Presencial en Metro U. de Chile</h3><p>Entregas en la estación Metro Universidad de Chile, en horario de oficina.</p></div>
       <div class="opt"><h3>📦 Envíos a regiones</h3><p>También hago envíos a regiones.</p></div>
+      <a class="opt wa" id="wa" href="#" target="_blank" rel="noopener"><h3>💬 Contacto</h3><p>Escríbeme por WhatsApp.</p></a>
     </div>
     <iframe class="map" title="Mapa de la estación Metro Universidad de Chile, Santiago" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
       src="https://www.google.com/maps?q=Metro+Universidad+de+Chile,+Santiago,+Chile&output=embed"></iframe>
@@ -95,6 +109,9 @@
 <script>
 const API = "https://script.google.com/macros/s/AKfycbxsOMIMUIm61qxNokDuDnv-TqQWAG6IspHZCgPcKRIXIUDWaXzMsK__S7iUxGWZX7Pz/exec";   // misma URL que en coleccion.html
 const $ = id => document.getElementById(id);
+const WHATSAPP = "56961717822";   // número con código de país, sin + ni espacios
+const WA_MSG = "Hola, vi tu sitio de cartas Pokémon TCG 30th Celebration y quisiera consultar por ";
+$("wa").href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(WA_MSG);
 $("adm").onclick = () => { $("err").textContent = ""; $("dlg").showModal(); $("pw").focus(); };
 $("cx").onclick = () => $("dlg").close();
 $("f").addEventListener("submit", async ev => {
