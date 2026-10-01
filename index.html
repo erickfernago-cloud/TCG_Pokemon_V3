@@ -21,9 +21,6 @@
   .cta{display:inline-block;background:var(--cobalt);color:#fff;text-decoration:none;font-weight:600;padding:14px 26px;border-radius:10px;font-size:1.05rem;transition:transform .15s}
   .cta:hover{transform:translateY(-2px)}
   :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px;padding:0;list-style:none}
-  .stats li{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:.85rem;color:var(--muted)}
-  .stats b{display:block;font-size:1.3rem;color:var(--ink)}
   .fan{position:relative;height:380px}
   .fan img{position:absolute;width:48%;top:50%;left:50%;border-radius:10px;box-shadow:0 14px 30px rgba(10,15,40,.35);transform-origin:50% 120%}
   .fan img:nth-child(1){transform:translate(-50%,-50%) rotate(-14deg) translateX(-55%)}
@@ -58,7 +55,7 @@
   a.opt.wa:hover{transform:translateY(-2px)}
   @media (max-width:900px){.opts{grid-template-columns:1fr}}
   @media (prefers-reduced-motion:reduce){a.opt.wa{transition:none}}
-  p.lead,.perks li,.opt p{text-align:justify}
+  p.lead,.perks li,.opt p{text-align:justify;hyphens:auto;-webkit-hyphens:auto}
 </style>
 </head>
 <body>
@@ -74,12 +71,6 @@
       <li>❤️ Colecciona y disfruta el mundo Pokémon a tu manera.</li>
     </ul>
     <a class="cta" href="coleccion.html">Ver colecciones →</a>
-    <ul class="stats" aria-label="Contenido del set">
-      <li><b>128</b>set principal</li>
-      <li><b>33</b>secretas</li>
-      <li><b>30</b>Classic Collection</li>
-      <li><b>8</b>energías</li>
-    </ul>
   </section>
   <div class="fan" aria-hidden="true">
     <img alt="" src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_157_R_EN_SM.png" onerror="this.remove()">
