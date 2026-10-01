@@ -63,6 +63,11 @@
   .logout{border:1px solid var(--line);background:var(--panel);padding:4px 12px;border-radius:99px;cursor:pointer;font-size:.8rem;font-weight:600}
   .logout:hover{border-color:var(--cobalt)}
   .logout[hidden]{display:none}
+  .actions{flex:1 1 100%;display:flex;gap:8px;flex-wrap:wrap}
+  .actions:not(:has(button:not([hidden]))){display:none}
+  .act{border:1px solid var(--line);background:var(--bg);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.9rem}
+  .act:hover{border-color:var(--cobalt)}
+  .act[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -80,12 +85,11 @@
     </select>
     <select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select>
     <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
+    <div class="actions"><button id="cp" class="act" hidden>Copiar mi selección</button><button id="clr" class="act" hidden>Limpiar selección</button></div>
   </div>
   <div id="view"><div class="msg">Cargando el Excel…</div></div>
   <footer>
     <span id="foot"></span>
-    <button id="cp" hidden>Copiar mi selección</button>
-    <button id="clr" hidden>Limpiar selección</button>
   </footer>
 </div>
 <script>
