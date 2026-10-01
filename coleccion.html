@@ -65,9 +65,8 @@
   </div>
   <div id="view"><div class="msg">Cargando el Excel…</div></div>
   <footer>
-    <span>Toca una carta para marcarla o desmarcarla. Esos cambios quedan solo en este navegador; para hacerlos permanentes, marca «Sí» en tu Google Sheet; la página lo leerá al recargar.</span>
-    <button id="exp">Descargar mis marcas (CSV)</button>
-    <button id="rst">Volver a los datos del Excel</button>
+    <span id="foot"></span>
+    <button id="out" hidden>Cerrar sesión de admin</button>
   </footer>
 </div>
 <script>
@@ -79,11 +78,11 @@ const DRIVE_API_KEY = "AIzaSyB6Fzuf9tb_YeJJbNcPBJAc0hEtP_oOvWs";   // clave de A
 let driveMap = {};          // código de carta -> ID del archivo en Drive
 // Respaldo si una imagen no está en Drive:
 const IMG = c => `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_${c}_R_EN_SM.png`;
-const LS = "tcg30c-marks";
-let data = {}, sheet = "", marks = {};
-try { marks = JSON.parse(localStorage.getItem(LS) || "{}"); } catch(e) {}
+const API = "https://script.google.com/macros/s/AKfycbxsOMIMUIm61qxNokDuDnv-TqQWAG6IspHZCgPcKRIXIUDWaXzMsK__S7iUxGWZX7Pz/exec";   // URL de la aplicación web (termina en /exec)
+const PW = sessionStorage.getItem("tcg30c-admin") || "";
+const ADMIN = !!PW;
+let data = {}, sheet = "";
 const $ = id => document.getElementById(id);
-const save = () => { try { localStorage.setItem(LS, JSON.stringify(marks)); } catch(e) {} };
 
 function csv(t){
   const out=[]; let row=[], f="", q=false;
@@ -115,7 +114,7 @@ function parseSheet(name, text){
 const nameOf = r => r["Nombre"] || r["Carta"] || "";
 const numOf  = r => r["N.º"] || r["N.º original"] || "";
 const keyOf  = (s, r) => s + "|" + numOf(r) + "|" + nameOf(r);
-const isOwn  = (s, r) => { const k = keyOf(s, r); return k in marks ? marks[k] : r["¿La tengo?"] === "Sí"; };
+const isOwn  = (s, r) => r["¿La tengo?"] === "Sí";
 
 function codeFromName(name){
   let n = name.replace(/\.[^.]+$/, "").toUpperCase().replace(/^30C[_\- ]?/, "");
@@ -199,20 +198,32 @@ function render(){
     b.className = "card" + (o ? " own" : ""); b.setAttribute("aria-pressed", o);
     b.innerHTML = `<div class="img">${r._img ? `<img loading="lazy" alt="" src="${driveMap[r._img] ? `https://drive.google.com/thumbnail?id=${driveMap[r._img]}&sz=w400` : IMG(r._img)}" data-fb="${IMG(r._img)}" onerror="if(this.dataset.fb&&!this.dataset.t){this.dataset.t=1;this.src=this.dataset.fb}else{this.replaceWith('Sin imagen')}">` : "Sin imagen"}</div>
       <b>${nameOf(r)}</b><small>${numOf(r)}</small>${r["Rareza"] ? `<span class="tag">${r["Rareza"]}</span>` : ""}`;
-    b.onclick = () => { marks[keyOf(sheet, r)] = !isOwn(sheet, r); save(); render(); };
+    b.style.cursor = ADMIN ? "pointer" : "default"; b.onclick = () => toggle(r);
     g.appendChild(b);
   });
   $("view").replaceChildren(g);
 }
 ["q","own","rar"].forEach(id => $(id).addEventListener("input", render));
-$("rst").onclick = () => { if (confirm("¿Borrar los cambios hechos en este navegador y volver a lo que dice el Excel?")){ marks = {}; save(); render(); } };
-$("exp").onclick = () => {
-  const lines = ["Hoja,N.º,Carta,Tengo"];
-  Object.keys(data).forEach(s => data[s].forEach(r => lines.push([s, numOf(r), '"' + nameOf(r).replace(/"/g,'""') + '"', isOwn(s, r) ? "Sí" : "No"].join(","))));
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], {type:"text/csv"}));
-  a.download = "mis-marcas-30c.csv"; a.click();
-};
+let busy = false;
+async function toggle(r){
+  if (!ADMIN || busy) return;
+  busy = true;
+  const old = r["¿La tengo?"], val = old === "Sí" ? "No" : "Sí";
+  r["¿La tengo?"] = val; render();
+  try{
+    const res = await fetch(API, {method:"POST", body: JSON.stringify({action:"set", password:PW, sheet, num:numOf(r), name:nameOf(r), value:val})});
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || "Error desconocido");
+  }catch(e){
+    r["¿La tengo?"] = old; render();
+    alert("No se pudo guardar: " + e.message);
+  }
+  busy = false;
+}
+$("foot").textContent = ADMIN
+  ? "Modo admin: toca una carta para marcarla o desmarcarla. Los cambios se guardan en tu Google Sheet."
+  : "Vista de solo lectura. Si eres el administrador, inicia sesión desde la página de inicio.";
+if (ADMIN){ $("out").hidden = false; $("out").onclick = () => { sessionStorage.removeItem("tcg30c-admin"); location.href = "index.html"; }; }
 load();
 </script>
 </body>
