@@ -39,6 +39,15 @@
   dialog button{font:inherit;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:transparent;color:inherit}
   dialog button.go{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
   #err{color:#d64545;font-size:.85rem;min-height:1.2em;margin:0 0 6px}
+  .info{grid-column:1/-1;margin-top:8px}
+  .info h2{font-size:1.4rem;margin:0 0 14px;letter-spacing:-.01em}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+  .opt{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .opt h3{margin:0 0 4px;font-size:1.05rem}
+  .opt p{margin:0;color:var(--muted);font-size:.95rem}
+  .map{width:100%;height:320px;border:1px solid var(--line);border-radius:12px;display:block;background:var(--panel)}
+  .maplink{display:inline-block;margin-top:8px;color:var(--cobalt);font-size:.9rem}
+  @media (max-width:760px){.opts{grid-template-columns:1fr}.map{height:260px}}
 </style>
 </head>
 <body>
@@ -60,6 +69,16 @@
     <img alt="" src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_149_R_EN_SM.png" onerror="this.remove()">
     <img alt="" src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_158_R_EN_SM.png" onerror="this.remove()">
   </div>
+  <section class="info" aria-labelledby="entregas">
+    <h2 id="entregas">Entregas</h2>
+    <div class="opts">
+      <div class="opt"><h3>📍 Presencial en Metro U. de Chile</h3><p>Entregas en la estación Metro Universidad de Chile, en horario de oficina.</p></div>
+      <div class="opt"><h3>📦 Envíos a regiones</h3><p>También hago envíos a regiones.</p></div>
+    </div>
+    <iframe class="map" title="Mapa de la estación Metro Universidad de Chile, Santiago" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+      src="https://www.google.com/maps?q=Metro+Universidad+de+Chile,+Santiago,+Chile&output=embed"></iframe>
+    <a class="maplink" href="https://www.google.com/maps/search/?api=1&query=Metro+Universidad+de+Chile+Santiago" target="_blank" rel="noopener">Abrir en Google Maps ↗</a>
+  </section>
 </main>
 <dialog id="dlg">
   <form id="f" method="dialog">
