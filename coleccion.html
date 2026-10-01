@@ -8,12 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#e9ecf3; --panel:#ffffff; --ink:#16203a; --muted:#5d6785; --line:#d3d8e6;
-    --cobalt:#2f4bff; --gold:#e3a700; --ok:#1a8a4f;
+    --bg:#070a16; --panel:#1a2038; --ink:#eef0fa; --muted:#9aa4c7; --line:#2c3457;
+    --cobalt:#7d92ff; --gold:#ffc933; --ok:#4fd08a; color-scheme:dark;
     --f:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;
   }
   @media (prefers-color-scheme:dark){
-    :root{--bg:#101427;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933;--ok:#4fd08a}
+    :root{--bg:#070a16;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933;--ok:#4fd08a}
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);line-height:1.4}
@@ -90,6 +90,13 @@
   #go{background:var(--cobalt)!important;border-color:var(--cobalt)!important;color:#fff}
   #trerr{color:#d64545;font-weight:600;margin:6px auto 0;max-width:1200px;min-height:1.1em;font-size:.9rem}
   #tray[hidden]{display:none}
+  #trmin{display:block;margin:0 auto 6px;font-weight:600}
+  #tray.min{padding-top:6px;padding-bottom:6px}
+  #tray.min #trmin{margin-bottom:0}
+  #tray.min .trbody{display:none}
+  #foot:empty{display:none}
+  #top{position:fixed;right:16px;bottom:calc(var(--trayh,0px) + 16px);z-index:30;width:46px;height:46px;border-radius:50%;border:2px solid var(--cobalt);background:var(--panel);color:var(--ink);font-size:1.3rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+  #top[hidden]{display:none}
   body{padding-bottom:110px}
   #foot{margin:0;padding-top:8px;color:var(--muted);font-size:.85rem}
 </style>
@@ -116,13 +123,15 @@
   </div>
   <div id="view"><div class="msg">Cargando…</div></div>
 </div>
+<button id="top" hidden aria-label="Subir al inicio" title="Subir">↑</button>
 <div id="tray" hidden>
-  <div class="tr"><b id="trn"></b>
+  <button id="trmin" aria-expanded="true"></button>
+  <div class="trbody"><div class="tr">
     <label><input type="radio" name="act" value="comprar"> 🛒 Quiero comprar lo seleccionado</label>
     <label><input type="radio" name="act" value="vender"> 💰 Quiero vender lo seleccionado</label>
     <label><input type="radio" name="act" value="cambiar"> 🔄 Quiero cambiar lo seleccionado</label>
     <button id="go">Continuar</button><button id="clr">Limpiar selección</button></div>
-  <p id="trerr" role="alert"></p>
+  <p id="trerr" role="alert"></p></div>
 </div>
 <script>
 const SHEET_ID = "1H-xJutkK2lumjkKChyJj5Q18EW7wW-Ji6boq6GUlbHQ";   // ID de tu Google Sheet
@@ -303,9 +312,18 @@ $("foot").textContent = ADMIN
   ? "Modo admin: toca una carta para marcarla o desmarcarla. Los cambios se guardan en tu Google Sheet."
   : "Toca las cartas que quieras seleccionar. Tu selección se guarda solo en este navegador";
 if (ADMIN){ $("out").hidden = false; $("out").onclick = () => { sessionStorage.removeItem("tcg30c-admin"); location.href = "index.html"; }; }
-function updTray(){ if (ADMIN) return; $("tray").hidden = !picks.size; $("trn").textContent = "Mi selección (" + picks.size + ")"; }
+function setTrayH(){ document.documentElement.style.setProperty("--trayh", ($("tray") && !$("tray").hidden ? $("tray").offsetHeight : 0) + "px"); }
+function updTray(){
+  if (ADMIN) return;
+  $("tray").hidden = !picks.size;
+  const m = $("tray").classList.contains("min");
+  $("trmin").textContent = (m ? "▴ " : "▾ ") + "Mi selección (" + picks.size + ")" + (m ? " · Mostrar" : " · Minimizar");
+  $("foot").textContent = picks.size ? "" : "Toca las cartas que quieras seleccionar. Tu selección se guarda solo en este navegador";
+  setTrayH();
+}
 if (ADMIN) $("tray").remove();
 else {
+  $("trmin").onclick = () => { const m = $("tray").classList.toggle("min"); $("trmin").setAttribute("aria-expanded", !m); updTray(); };
   document.querySelectorAll("input[name=act]").forEach(i => i.onchange = () => $("trerr").textContent = "");
   $("go").onclick = () => {
     const a = document.querySelector("input[name=act]:checked");
@@ -326,6 +344,10 @@ addEventListener("scroll", () => {
   if (atTop && y > 60){ atTop = false; accs.forEach(d => d.open = false); }
   else if (!atTop && y <= 5){ atTop = true; accs[0].open = true; }
 }, {passive:true});
+const topBtn = $("top");
+function chkTop(){ topBtn.hidden = !(scrollY > 300 && innerHeight + scrollY >= document.documentElement.scrollHeight - 160); setTrayH(); }
+addEventListener("scroll", chkTop, {passive:true}); addEventListener("resize", chkTop);
+topBtn.onclick = () => scrollTo({top:0, behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"});
 load();
 </script>
 </body>
