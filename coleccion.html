@@ -91,6 +91,7 @@
   #trerr{color:#d64545;font-weight:600;margin:6px auto 0;max-width:1200px;min-height:1.1em;font-size:.9rem}
   #tray[hidden]{display:none}
   body{padding-bottom:110px}
+  #foot{margin:0;padding-top:8px;color:var(--muted);font-size:.85rem}
 </style>
 </head>
 <body>
@@ -111,11 +112,9 @@
     <div class="grp g2">
       <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
     </div>
+    <p id="foot" class="hint"></p>
   </div>
-  <div id="view"><div class="msg">Cargando el Excel…</div></div>
-  <footer>
-    <span id="foot"></span>
-  </footer>
+  <div id="view"><div class="msg">Cargando…</div></div>
 </div>
 <div id="tray" hidden>
   <div class="tr"><b id="trn"></b>
