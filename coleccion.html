@@ -109,6 +109,16 @@
     #tray .btns{display:flex;margin-left:0;gap:10px}
     #tray .btns button{padding:9px 16px}
   }
+  dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:22px;width:min(420px,94vw);font-family:var(--f)}
+  dialog::backdrop{background:rgba(0,0,0,.65)}
+  dialog h2{margin:0 0 10px;font-size:1.2rem}
+  dialog label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:8px}
+  dialog input,dialog textarea{display:block;width:100%;margin-top:3px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px}
+  dialog .hint{font-size:.85rem;color:var(--muted);margin:4px 0 8px}
+  dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+  dialog button{font:inherit;color:inherit;border:1px solid var(--line);background:transparent;padding:8px 16px;border-radius:8px;cursor:pointer}
+  dialog button.go{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+  #rerr{color:#d64545;min-height:1.1em;font-size:.88rem;margin:0}
 </style>
 </head>
 <body>
@@ -139,6 +149,17 @@
   <div class="trbody"><div class="tr"><div class="acts"><label><input type="radio" name="act" value="comprar"> 🛒 Quiero comprar</label><label><input type="radio" name="act" value="vender"> 💰 Quiero vender</label><label><input type="radio" name="act" value="cambiar"> 🔄 Quiero cambiar</label></div><div class="btns"><button id="go">Continuar</button><button id="clr">Limpiar selección</button></div></div>
   <p id="trerr" role="alert"></p></div>
 </div>
+<dialog id="stk"><h2>Sin stock</h2><p id="stkmsg"></p><div class="row"><button id="stkok" class="go">Entendido</button></div></dialog>
+<dialog id="rq"><form id="rqf" method="dialog"><h2 id="rqt">Tus datos</h2>
+  <label>Nombre<input id="rn" required autocomplete="name"></label>
+  <label>WhatsApp o teléfono<input id="rc" required autocomplete="tel"></label>
+  <label>Correo (opcional)<input id="re" type="email" autocomplete="email"></label>
+  <p class="hint">Entrega presencial en Metro Universidad de Chile, en horario de oficina. Elige una fecha y la confirmamos contigo.</p>
+  <label>Fecha de entrega<input id="rf" type="date" required></label>
+  <label>Notas (opcional)<textarea id="rt" rows="2"></textarea></label>
+  <p id="rerr" role="alert"></p>
+  <div class="row"><button type="button" id="rx">Cancelar</button><button class="go" id="rs">Enviar por WhatsApp</button></div>
+</form></dialog>
 <script>
 const SHEET_ID = "1H-xJutkK2lumjkKChyJj5Q18EW7wW-Ji6boq6GUlbHQ";   // ID de tu Google Sheet
 const SHEETS = ["Set principal", "Secretas", "Classic Collection", "Energías"];
@@ -331,15 +352,40 @@ if (ADMIN) $("tray").remove();
 else {
   $("trmin").onclick = () => { const m = $("tray").classList.toggle("min"); $("trmin").setAttribute("aria-expanded", !m); updTray(); };
   document.querySelectorAll("input[name=act]").forEach(i => i.onchange = () => $("trerr").textContent = "");
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const chosen = () => document.querySelector("input[name=act]:checked").value;
+  const picked = () => { const o = []; Object.keys(data).forEach(sn => data[sn].forEach(r => { if (picks.has(keyOf(sn, r))) o.push({sn, r}); })); return o; };
+  const label = ({sn, r}) => (numOf(r) ? numOf(r) + " – " : "") + nameOf(r) + " (" + sn + ")";
   $("go").onclick = () => {
-    const a = document.querySelector("input[name=act]:checked");
-    if (!a){ $("trerr").textContent = "Debes seleccionar una acción para continuar"; return; }
-    const lines = [];
-    Object.keys(data).forEach(sn => data[sn].forEach(r => { if (picks.has(keyOf(sn, r))) lines.push("• " + (numOf(r) ? numOf(r) + " – " : "") + nameOf(r) + " (" + sn + ")"); }));
-    if (!lines.length){ $("trerr").textContent = "Aún no has seleccionado cartas."; return; }
-    const msg = "Hola, quiero " + a.value + " las siguientes cartas:\n" + lines.join("\n");
-    window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+    if (!document.querySelector("input[name=act]:checked")){ $("trerr").textContent = "Debes seleccionar una acción para continuar"; return; }
+    const sel = picked();
+    if (!sel.length){ $("trerr").textContent = "Aún no has seleccionado cartas."; return; }
+    if (chosen() === "comprar"){
+      const sin = sel.filter(x => !isOwn(x.sn, x.r));
+      if (sin.length){
+        sin.forEach(x => picks.delete(keyOf(x.sn, x.r))); savePicks(); render();
+        $("stkmsg").innerHTML = "Estas cartas no están en stock y se quitaron de tu selección:<br>• " + sin.map(label).join("<br>• ");
+        $("stk").showModal(); return;
+      }
+    }
+    $("trerr").textContent = ""; $("rerr").textContent = ""; $("rqt").textContent = "Tus datos · " + cap(chosen());
+    $("rf").min = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+    $("rq").showModal();
   };
+  $("stkok").onclick = () => $("stk").close();
+  $("rx").onclick = () => $("rq").close();
+  $("rqf").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const lines = picked().map(x => "• " + label(x));
+    if (!lines.length){ $("rerr").textContent = "No hay cartas seleccionadas."; return; }
+    const f = $("rf").value.split("-").reverse().join("-");
+    const msg = "Hola, soy " + $("rn").value + ". Quiero " + chosen() + " las siguientes cartas:\n" + lines.join("\n")
+      + "\nContacto: " + $("rc").value + ($("re").value ? " · " + $("re").value : "")
+      + "\nEntrega propuesta: " + f + " en Metro U. de Chile (horario de oficina). ¿Me confirmas la fecha?"
+      + ($("rt").value ? "\nNotas: " + $("rt").value : "");
+    window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+    $("rq").close(); picks.clear(); savePicks(); render();
+  });
   $("clr").onclick = () => { if (picks.size && confirm("¿Quitar todas las cartas seleccionadas?")){ picks.clear(); savePicks(); render(); } };
 }
 // Al empezar el scroll se contraen Filtros y Búsqueda; al volver arriba, Filtros se vuelve a abrir.
