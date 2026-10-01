@@ -127,9 +127,9 @@
 <div id="tray" hidden>
   <button id="trmin" aria-expanded="true"></button>
   <div class="trbody"><div class="tr">
-    <label><input type="radio" name="act" value="comprar"> 🛒 Quiero comprar lo seleccionado</label>
-    <label><input type="radio" name="act" value="vender"> 💰 Quiero vender lo seleccionado</label>
-    <label><input type="radio" name="act" value="cambiar"> 🔄 Quiero cambiar lo seleccionado</label>
+    <label><input type="radio" name="act" value="comprar"> 🛒 Quiero comprar</label>
+    <label><input type="radio" name="act" value="vender"> 💰 Quiero vender</label>
+    <label><input type="radio" name="act" value="cambiar"> 🔄 Quiero cambiar</label>
     <button id="go">Continuar</button><button id="clr">Limpiar selección</button></div>
   <p id="trerr" role="alert"></p></div>
 </div>
@@ -343,6 +343,13 @@ addEventListener("scroll", () => {
   const y = scrollY;
   if (atTop && y > 60){ atTop = false; accs.forEach(d => d.open = false); }
   else if (!atTop && y <= 5){ atTop = true; accs[0].open = true; }
+}, {passive:true});
+// Al hacer scroll, la barra de acción se minimiza sola (se reabre desde su pestaña).
+let lastY = scrollY;
+addEventListener("scroll", () => {
+  const y = scrollY, d = Math.abs(y - lastY); lastY = y;
+  const t = $("tray");
+  if (t && !ADMIN && !t.hidden && !t.classList.contains("min") && d > 8){ t.classList.add("min"); $("trmin").setAttribute("aria-expanded", "false"); updTray(); }
 }, {passive:true});
 const topBtn = $("top");
 function chkTop(){ topBtn.hidden = !(scrollY > 300 && innerHeight + scrollY >= document.documentElement.scrollHeight - 160); setTrayH(); }
