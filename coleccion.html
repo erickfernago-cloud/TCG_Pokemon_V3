@@ -68,6 +68,11 @@
   .act{border:1px solid var(--line);background:var(--bg);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.9rem}
   .act:hover{border-color:var(--cobalt)}
   .act[hidden]{display:none}
+  .bar{flex-direction:column;align-items:stretch;gap:12px}
+  .grp{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .g2{padding-top:12px;border-top:1px solid var(--line)}
+  .g1 input[type=search]{flex:1 1 200px}
+  header p,.msg,#foot{text-align:justify}
 </style>
 </head>
 <body>
@@ -78,14 +83,18 @@
 </header>
 <div class="wrap">
   <div class="bar">
-    <div class="tabs" id="tabs" role="tablist"></div>
-    <input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar">
-    <select id="own" aria-label="Filtrar por estado">
+    <div class="grp g1">
+      <input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar">
+      <div class="tabs" id="tabs" role="tablist"></div>
+    </div>
+    <div class="grp g2">
+      <select id="own" aria-label="Filtrar por estado">
       <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option>
     </select>
-    <select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select>
-    <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
-    <div class="actions"><button id="cp" class="act" hidden>Copiar mi selección</button><button id="clr" class="act" hidden>Limpiar selección</button></div>
+      <select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select>
+      <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
+      <div class="actions"><button id="cp" class="act" hidden>Copiar mi selección</button><button id="clr" class="act" hidden>Limpiar selección</button></div>
+    </div>
   </div>
   <div id="view"><div class="msg">Cargando el Excel…</div></div>
   <footer>
@@ -109,6 +118,8 @@ let picks = new Set();
 try { picks = new Set(JSON.parse(localStorage.getItem(GK) || "[]")); } catch(e) {}
 const savePicks = () => { try { localStorage.setItem(GK, JSON.stringify([...picks])); } catch(e) {} };
 let data = {}, sheet = "";
+const ALL = "Todo";
+const rowsOf = n => n === ALL ? SHEETS.flatMap(x => data[x] || []) : (data[n] || []);
 const $ = id => document.getElementById(id);
 
 function csv(t){
@@ -135,7 +146,7 @@ function parseSheet(name, text){
   const t = Array.isArray(text) ? text : csv(text), heads = t[0] || [];
   return t.slice(1).map((cells,i)=>{
     const o={}; heads.forEach((h,c)=>o[h]=cells[c]||"");
-    o._img=imgFor(name,o,i); return o;
+    o._img=imgFor(name,o,i); o._sheet=name; return o;
   }).filter(o=>Object.values(o).some(v=>v!==""));
 }
 const nameOf = r => r["Nombre"] || r["Carta"] || "";
@@ -203,7 +214,7 @@ async function load(){
 }
 function buildTabs(){
   $("tabs").innerHTML = "";
-  Object.keys(data).forEach(n => {
+  [ALL, ...Object.keys(data)].forEach(n => {
     const b = document.createElement("button");
     b.className = "tab"; b.role = "tab"; b.textContent = n;
     b.onclick = () => { sheet = n; fillRarity(); render(); };
@@ -212,27 +223,27 @@ function buildTabs(){
   fillRarity();
 }
 function fillRarity(){
-  const set = [...new Set(data[sheet].map(r => r["Rareza"]).filter(Boolean))];
+  const set = [...new Set(rowsOf(sheet).map(r => r["Rareza"]).filter(Boolean))];
   $("rar").innerHTML = '<option value="">Todas las rarezas</option>' + set.map(x => `<option>${x}</option>`).join("");
   $("rar").style.display = set.length ? "" : "none";
 }
 function render(){
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.textContent === sheet));
-  const rows = data[sheet], q = $("q").value.trim().toLowerCase(), f = $("own").value, rar = $("rar").value;
-  const own = rows.filter(r => isOwn(sheet, r)).length;
+  const rows = rowsOf(sheet), q = $("q").value.trim().toLowerCase(), f = $("own").value, rar = $("rar").value;
+  const own = rows.filter(r => isOwn(r._sheet, r)).length;
   $("ptxt").textContent = `${sheet}: ${own} de ${rows.length} (${rows.length ? Math.round(own/rows.length*100) : 0}%)`;
   if (!ADMIN) $("cp").textContent = "Copiar mi selección (" + picks.size + ")";
   $("pfill").style.width = (rows.length ? own/rows.length*100 : 0) + "%";
   const list = rows.filter(r => {
-    const o = isOwn(sheet, r);
+    const o = isOwn(r._sheet, r);
     return (f === "all" || (f === "yes") === o) && (!rar || r["Rareza"] === rar) &&
       (!q || (nameOf(r) + " " + numOf(r)).toLowerCase().includes(q));
   });
   const g = document.createElement("div"); g.className = "grid";
   if (!list.length) g.innerHTML = '<div class="msg">Ninguna carta coincide con estos filtros.</div>';
   list.forEach(r => {
-    const o = isOwn(sheet, r), b = document.createElement("button");
-    b.className = "card" + (o ? " own" : "") + (r._saving ? " saving" : "") + (!ADMIN && picks.has(keyOf(sheet, r)) ? " pick" : ""); b.setAttribute("aria-pressed", o);
+    const o = isOwn(r._sheet, r), b = document.createElement("button");
+    b.className = "card" + (o ? " own" : "") + (r._saving ? " saving" : "") + (!ADMIN && picks.has(keyOf(r._sheet, r)) ? " pick" : ""); b.setAttribute("aria-pressed", o);
     b.innerHTML = `<div class="img">${r._img ? `<img loading="lazy" alt="" src="${driveMap[r._img] ? `https://drive.google.com/thumbnail?id=${driveMap[r._img]}&sz=w400` : IMG(r._img)}" data-fb="${IMG(r._img)}" onerror="if(this.dataset.fb&&!this.dataset.t){this.dataset.t=1;this.src=this.dataset.fb}else{this.replaceWith('Sin imagen')}">` : "Sin imagen"}</div>
       <b>${nameOf(r)}</b><small>${numOf(r)}</small>${r["Rareza"] ? `<span class="tag">${r["Rareza"]}</span>` : ""}`;
     b.style.cursor = "pointer"; b.onclick = () => toggle(r);
@@ -244,7 +255,7 @@ function render(){
 let busy = false;
 async function toggle(r){
   if (!ADMIN){            // invitado: selección local, no toca la hoja
-    const k = keyOf(sheet, r);
+    const k = keyOf(r._sheet, r);
     picks.has(k) ? picks.delete(k) : picks.add(k);
     savePicks(); render(); return;
   }
@@ -253,7 +264,7 @@ async function toggle(r){
   const old = r["¿La tengo?"], val = old === "Sí" ? "No" : "Sí";
   r["¿La tengo?"] = val; r._saving = true; render();
   try{
-    const res = await fetch(API, {method:"POST", body: JSON.stringify({action:"set", password:PW, sheet, num:numOf(r), name:nameOf(r), value:val})});
+    const res = await fetch(API, {method:"POST", body: JSON.stringify({action:"set", password:PW, sheet:r._sheet, num:numOf(r), name:nameOf(r), value:val})});
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || "Error desconocido");
   }catch(e){
