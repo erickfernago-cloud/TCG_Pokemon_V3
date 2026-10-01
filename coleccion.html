@@ -57,11 +57,17 @@
   .card.pick{border-color:var(--cobalt)}
   .card.pick::after{content:"✓";position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:var(--cobalt);color:#fff;font-size:.85rem;font-weight:800;display:grid;place-items:center;z-index:3}
   footer button[hidden]{display:none}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 14px}
+  .top .home{color:var(--cobalt);text-decoration:none}
+  .session{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .logout{border:1px solid var(--line);background:var(--panel);padding:4px 12px;border-radius:99px;cursor:pointer;font-size:.8rem;font-weight:600}
+  .logout:hover{border-color:var(--cobalt)}
+  .logout[hidden]{display:none}
 </style>
 </head>
 <body>
 <header>
-  <p style="margin:0 0 8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a href="index.html" style="color:var(--cobalt);text-decoration:none">← Inicio</a><span id="role" class="role"></span></p>
+  <div class="top"><a href="index.html" class="home">← Inicio</a><div class="session"><span id="role" class="role"></span><button id="out" class="logout" hidden>Cerrar sesión</button></div></div>
   <h1>Pokémon TCG · 30th Celebration</h1>
   <p>Tu colección, leída en vivo desde tu Google Sheet.</p>
 </header>
@@ -80,7 +86,6 @@
     <span id="foot"></span>
     <button id="cp" hidden>Copiar mi selección</button>
     <button id="clr" hidden>Limpiar selección</button>
-    <button id="out" hidden>Cerrar sesión de admin</button>
   </footer>
 </div>
 <script>
@@ -253,7 +258,7 @@ async function toggle(r){
   }
   r._saving = false; busy = false; render();
 }
-$("role").textContent = ADMIN ? "● Administrador" : "Invitado · tu selección es solo local";
+$("role").textContent = ADMIN ? "● Perfil: Administrador" : "Perfil: Invitado";
 $("role").className = "role " + (ADMIN ? "admin" : "guest");
 $("foot").textContent = ADMIN
   ? "Modo admin: toca una carta para marcarla o desmarcarla. Los cambios se guardan en tu Google Sheet."

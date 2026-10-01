@@ -11,7 +11,8 @@
         --f:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
   @media (prefers-color-scheme:dark){:root{--bg:#101427;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933}}
   *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f);line-height:1.5;display:grid;place-items:center;padding:32px 20px}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f);line-height:1.5;display:flex;flex-direction:column;align-items:center;padding:32px 20px 20px}
+  main{margin:auto 0}
   main{max-width:980px;width:100%;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
   .tag{display:inline-block;font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
   h1{font-size:clamp(2.2rem,6vw,3.8rem);font-weight:800;line-height:1.02;letter-spacing:-.03em;margin:0 0 16px}
@@ -30,7 +31,9 @@
   .fan img:nth-child(3){transform:translate(-50%,-50%) rotate(14deg) translateX(55%)}
   @media (max-width:760px){main{grid-template-columns:1fr;gap:10px}.fan{height:300px;order:-1}}
   @media (prefers-reduced-motion:reduce){.cta{transition:none}}
-  .ghost{margin-left:10px;background:transparent;color:var(--ink);border:1px solid var(--line);font:inherit;font-weight:600;padding:13px 20px;border-radius:10px;cursor:pointer}
+  .site-foot{width:100%;max-width:980px;margin-top:40px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:center}
+  .adm{background:transparent;border:1px solid var(--line);color:var(--muted);font:inherit;font-size:.85rem;font-weight:600;padding:8px 16px;border-radius:99px;cursor:pointer}
+  .adm:hover{color:var(--ink);border-color:var(--cobalt)}
   dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:24px;width:min(340px,92vw);font-family:var(--f)}
   dialog::backdrop{background:rgba(10,15,40,.55)}
   dialog h2{margin:0 0 12px;font-size:1.2rem}
@@ -56,7 +59,7 @@
     <span class="tag">30 años · 1996–2026</span>
     <h1>Pokémon TCG <span>30th Celebration</span></h1>
     <p class="lead">Lleva el control de tu colección: qué cartas ya tienes, cuáles te faltan y cuánto llevas completado, con imagen de cada una.</p>
-    <a class="cta" href="coleccion.html">Ver la colección →</a><button class="ghost" id="adm">Acceso admin</button>
+    <a class="cta" href="coleccion.html">Ver la colección →</a>
     <ul class="stats" aria-label="Contenido del set">
       <li><b>128</b>set principal</li>
       <li><b>33</b>secretas</li>
@@ -80,6 +83,7 @@
     <a class="maplink" href="https://www.google.com/maps/search/?api=1&query=Metro+Universidad+de+Chile+Santiago" target="_blank" rel="noopener">Abrir en Google Maps ↗</a>
   </section>
 </main>
+<footer class="site-foot"><button class="adm" id="adm">🔒 Acceso admin</button></footer>
 <dialog id="dlg">
   <form id="f" method="dialog">
     <h2>Acceso de administrador</h2>
