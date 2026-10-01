@@ -105,7 +105,7 @@
       <summary>Filtros</summary>
       <div class="accbody frow"><div class="tabs" id="tabs" role="tablist"></div><select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select><select id="own" aria-label="Filtrar por estado"> <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option> </select></div>
     </details>
-    <details class="acc" open>
+    <details class="acc">
       <summary>Búsqueda</summary>
       <div class="accbody"><input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar"></div>
     </details>
@@ -301,7 +301,7 @@ $("role").textContent = ADMIN ? "● Perfil: Administrador" : "Perfil: Invitado"
 $("role").className = "role " + (ADMIN ? "admin" : "guest");
 $("foot").textContent = ADMIN
   ? "Modo admin: toca una carta para marcarla o desmarcarla. Los cambios se guardan en tu Google Sheet."
-  : "Toca las cartas que quieras seleccionar. Tu selección se guarda solo en este navegador y no modifica la hoja.";
+  : "Toca las cartas que quieras seleccionar. Tu selección se guarda solo en este navegador";
 if (ADMIN){ $("out").hidden = false; $("out").onclick = () => { sessionStorage.removeItem("tcg30c-admin"); location.href = "index.html"; }; }
 function updTray(){ if (ADMIN) return; $("tray").hidden = !picks.size; $("trn").textContent = "Mi selección (" + picks.size + ")"; }
 if (ADMIN) $("tray").remove();
@@ -318,6 +318,14 @@ else {
   };
   $("clr").onclick = () => { if (picks.size && confirm("¿Quitar todas las cartas seleccionadas?")){ picks.clear(); savePicks(); render(); } };
 }
+// Al empezar el scroll se contraen Filtros y Búsqueda; al volver arriba, Filtros se vuelve a abrir.
+const accs = document.querySelectorAll(".bar details.acc");
+let atTop = true;
+addEventListener("scroll", () => {
+  const y = scrollY;
+  if (atTop && y > 60){ atTop = false; accs.forEach(d => d.open = false); }
+  else if (!atTop && y <= 5){ atTop = true; accs[0].open = true; }
+}, {passive:true});
 load();
 </script>
 </body>
