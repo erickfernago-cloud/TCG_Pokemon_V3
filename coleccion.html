@@ -84,6 +84,13 @@
   .accbody input[type=search]{width:100%}
   .g2{border-top:0;padding-top:12px}
   @media (prefers-reduced-motion:reduce){.acc summary::after{transition:none}}
+  #tray{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--panel);border-top:2px solid var(--cobalt);padding:10px 16px}
+  #tray .tr{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;max-width:1200px;margin:0 auto}
+  #tray button{border:1px solid var(--line);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer;color:inherit;font:inherit}
+  #go{background:var(--cobalt)!important;border-color:var(--cobalt)!important;color:#fff}
+  #trerr{color:#d64545;font-weight:600;margin:6px auto 0;max-width:1200px;min-height:1.1em;font-size:.9rem}
+  #tray[hidden]{display:none}
+  body{padding-bottom:110px}
 </style>
 </head>
 <body>
@@ -107,13 +114,20 @@
     </details>
     <div class="grp g2">
       <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
-      <div class="actions"><button id="cp" class="act" hidden>Copiar mi selección</button><button id="clr" class="act" hidden>Limpiar selección</button></div>
     </div>
   </div>
   <div id="view"><div class="msg">Cargando el Excel…</div></div>
   <footer>
     <span id="foot"></span>
   </footer>
+</div>
+<div id="tray" hidden>
+  <div class="tr"><b id="trn"></b>
+    <label><input type="radio" name="act" value="comprar"> 🛒 Quiero comprar lo seleccionado</label>
+    <label><input type="radio" name="act" value="vender"> 💰 Quiero vender lo seleccionado</label>
+    <label><input type="radio" name="act" value="cambiar"> 🔄 Quiero cambiar lo seleccionado</label>
+    <button id="go">Continuar</button><button id="clr">Limpiar selección</button></div>
+  <p id="trerr" role="alert"></p>
 </div>
 <script>
 const SHEET_ID = "1H-xJutkK2lumjkKChyJj5Q18EW7wW-Ji6boq6GUlbHQ";   // ID de tu Google Sheet
@@ -127,6 +141,7 @@ const IMG = c => `https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/
 const API = "https://script.google.com/macros/s/AKfycbxsOMIMUIm61qxNokDuDnv-TqQWAG6IspHZCgPcKRIXIUDWaXzMsK__S7iUxGWZX7Pz/exec";   // URL de la aplicación web (termina en /exec)
 const PW = sessionStorage.getItem("tcg30c-admin") || "";
 const ADMIN = !!PW;
+const WHATSAPP = "56961717822";   // número con código de país, sin + ni espacios
 const GK = "tcg30c-guest";
 let picks = new Set();
 try { picks = new Set(JSON.parse(localStorage.getItem(GK) || "[]")); } catch(e) {}
@@ -246,7 +261,7 @@ function render(){
   const rows = rowsOf(sheet), q = $("q").value.trim().toLowerCase(), f = $("own").value, rar = $("rar").value;
   const own = rows.filter(r => isOwn(r._sheet, r)).length;
   $("ptxt").textContent = `${sheet}: ${own} de ${rows.length} (${rows.length ? Math.round(own/rows.length*100) : 0}%)`;
-  if (!ADMIN) $("cp").textContent = "Copiar mi selección (" + picks.size + ")";
+  updTray();
   $("pfill").style.width = (rows.length ? own/rows.length*100 : 0) + "%";
   const list = rows.filter(r => {
     const o = isOwn(r._sheet, r);
@@ -293,15 +308,18 @@ $("foot").textContent = ADMIN
   ? "Modo admin: toca una carta para marcarla o desmarcarla. Los cambios se guardan en tu Google Sheet."
   : "Toca las cartas que quieras seleccionar. Tu selección se guarda solo en este navegador y no modifica la hoja.";
 if (ADMIN){ $("out").hidden = false; $("out").onclick = () => { sessionStorage.removeItem("tcg30c-admin"); location.href = "index.html"; }; }
-if (!ADMIN){
-  $("cp").hidden = false; $("clr").hidden = false;
-  $("cp").onclick = async () => {
+function updTray(){ if (ADMIN) return; $("tray").hidden = !picks.size; $("trn").textContent = "Mi selección (" + picks.size + ")"; }
+if (ADMIN) $("tray").remove();
+else {
+  document.querySelectorAll("input[name=act]").forEach(i => i.onchange = () => $("trerr").textContent = "");
+  $("go").onclick = () => {
+    const a = document.querySelector("input[name=act]:checked");
+    if (!a){ $("trerr").textContent = "Debes seleccionar una acción para continuar"; return; }
     const lines = [];
-    Object.keys(data).forEach(sn => data[sn].forEach(r => { if (picks.has(keyOf(sn, r))) lines.push((numOf(r) ? numOf(r) + " – " : "") + nameOf(r) + " (" + sn + ")"); }));
-    if (!lines.length){ alert("Aún no has seleccionado cartas."); return; }
-    const txt = lines.join("\n");
-    try { await navigator.clipboard.writeText(txt); $("cp").textContent = "¡Copiado!"; setTimeout(render, 1500); }
-    catch(e){ prompt("Copia tu selección:", txt); }
+    Object.keys(data).forEach(sn => data[sn].forEach(r => { if (picks.has(keyOf(sn, r))) lines.push("• " + (numOf(r) ? numOf(r) + " – " : "") + nameOf(r) + " (" + sn + ")"); }));
+    if (!lines.length){ $("trerr").textContent = "Aún no has seleccionado cartas."; return; }
+    const msg = "Hola, quiero " + a.value + " las siguientes cartas:\n" + lines.join("\n");
+    window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
   };
   $("clr").onclick = () => { if (picks.size && confirm("¿Quitar todas las cartas seleccionadas?")){ picks.clear(); savePicks(); render(); } };
 }
