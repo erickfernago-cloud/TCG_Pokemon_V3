@@ -72,6 +72,18 @@
   .g2{padding-top:12px;border-top:1px solid var(--line)}
   .g1 input[type=search]{flex:1 1 200px}
   header p,.msg,#foot{text-align:justify}
+  .bar{max-height:calc(100vh - 16px);overflow-y:auto;top:8px;gap:0}
+  .acc{border-bottom:1px solid var(--line)}
+  .acc summary{list-style:none;cursor:pointer;display:flex;align-items:center;padding:10px 4px;font-weight:600;font-size:.95rem}
+  .acc summary::-webkit-details-marker{display:none}
+  .acc summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .2s}
+  .acc[open] summary::after{transform:rotate(180deg)}
+  .accbody{padding:2px 4px 12px}
+  .accbody.sel{display:flex;flex-wrap:wrap;gap:10px}
+  .accbody.sel select{flex:1 1 180px}
+  .accbody input[type=search]{width:100%}
+  .g2{border-top:0;padding-top:12px}
+  @media (prefers-reduced-motion:reduce){.acc summary::after{transition:none}}
 </style>
 </head>
 <body>
@@ -81,14 +93,21 @@
 </header>
 <div class="wrap">
   <div class="bar">
-    <div class="grp g1">
-      <div class="tabs" id="tabs" role="tablist"></div>
-      <select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select>
-      <input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar">
-    </div>
+    <details class="acc" open>
+      <summary>Filtros del set</summary>
+      <div class="accbody"><div class="tabs" id="tabs" role="tablist"></div></div>
+    </details>
+    <details class="acc" open>
+      <summary>Filtros de rareza y estado</summary>
+      <div class="accbody sel"><select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select><select id="own" aria-label="Filtrar por estado"> <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option> </select></div>
+    </details>
+    <details class="acc" open>
+      <summary>Búsqueda</summary>
+      <div class="accbody"><input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar"></div>
+    </details>
     <div class="grp g2">
       <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
-      <div class="actions"><select id="own" aria-label="Filtrar por estado"> <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option> </select><button id="cp" class="act" hidden>Copiar mi selección</button><button id="clr" class="act" hidden>Limpiar selección</button></div>
+      <div class="actions"><button id="cp" class="act" hidden>Copiar mi selección</button><button id="clr" class="act" hidden>Limpiar selección</button></div>
     </div>
   </div>
   <div id="view"><div class="msg">Cargando el Excel…</div></div>
