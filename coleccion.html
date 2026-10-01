@@ -79,8 +79,8 @@
   .acc summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .2s}
   .acc[open] summary::after{transform:rotate(180deg)}
   .accbody{padding:2px 4px 12px}
-  .accbody.sel{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .accbody.sel select{width:100%;min-width:0}
+  .frow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .frow .tabs{display:contents}
   .accbody input[type=search]{width:100%}
   .g2{border-top:0;padding-top:12px}
   @media (prefers-reduced-motion:reduce){.acc summary::after{transition:none}}
@@ -101,12 +101,8 @@
 <div class="wrap">
   <div class="bar">
     <details class="acc" open>
-      <summary>Filtros del set</summary>
-      <div class="accbody"><div class="tabs" id="tabs" role="tablist"></div></div>
-    </details>
-    <details class="acc" open>
-      <summary>Filtros de rareza y estado</summary>
-      <div class="accbody sel"><select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select><select id="own" aria-label="Filtrar por estado"> <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option> </select></div>
+      <summary>Filtros</summary>
+      <div class="accbody frow"><div class="tabs" id="tabs" role="tablist"></div><select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select><select id="own" aria-label="Filtrar por estado"> <option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option> </select></div>
     </details>
     <details class="acc" open>
       <summary>Búsqueda</summary>
