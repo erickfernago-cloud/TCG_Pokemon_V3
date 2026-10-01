@@ -84,6 +84,10 @@
   .accbody select,.accbody input[type=search]{width:100%;max-width:360px}
   .g2{border-top:0;padding-top:8px}
   @media (prefers-reduced-motion:reduce){.acc summary::after{transition:none}}
+  .row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;align-items:start}
+  .row3 .acc{border-bottom:0}
+  .accbody select,.accbody input[type=search]{max-width:none}
+  .note{margin:0 0 14px;font-size:.9rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -94,24 +98,26 @@
 <div class="wrap">
   <div class="bar">
     <details class="acc" open>
-      <summary>Filtros del set <span class="val" id="vSet"></span></summary>
+      <summary>Filtros del set</summary>
       <div class="accbody">
         <p class="hint">Estos botones son los filtros del set: elige qué parte del set quieres ver.</p>
         <div class="tabs" id="tabs" role="tablist"></div>
       </div>
     </details>
-    <details class="acc" id="accRar">
-      <summary>Rareza <span class="val" id="vRar"></span></summary>
-      <div class="accbody"><select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select></div>
-    </details>
-    <details class="acc">
-      <summary>Estado <span class="val" id="vOwn"></span></summary>
-      <div class="accbody"><select id="own" aria-label="Filtrar por estado"><option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option></select></div>
-    </details>
-    <details class="acc">
-      <summary>Buscar <span class="val" id="vQ"></span></summary>
-      <div class="accbody"><input type="search" id="q" placeholder="Buscar por nombre o número" aria-label="Buscar"></div>
-    </details>
+    <div class="row3">
+      <details class="acc" id="accRar" open>
+        <summary>Filtros de rareza</summary>
+        <div class="accbody"><select id="rar" aria-label="Filtrar por rareza"><option value="">Todas las rarezas</option></select></div>
+      </details>
+      <details class="acc" open>
+        <summary>Filtros de estado</summary>
+        <div class="accbody"><select id="own" aria-label="Filtrar por estado"><option value="all">Todas</option><option value="yes">Las tengo</option><option value="no">Me faltan</option></select></div>
+      </details>
+      <details class="acc" open>
+        <summary>Filtros de búsqueda</summary>
+        <div class="accbody"><input type="search" id="q" placeholder="Nombre o número" aria-label="Buscar"></div>
+      </details>
+    </div>
     <div class="grp g2">
       <div class="prog"><span id="ptxt">Cargando…</span><div class="track"><div class="fill" id="pfill"></div></div></div>
       <div class="actions">
@@ -125,10 +131,8 @@
       </div>
     </div>
   </div>
+  <p id="foot" class="note"></p>
   <div id="view"><div class="msg">Cargando…</div></div>
-  <footer>
-    <span id="foot"></span>
-  </footer>
 </div>
 <script>
 const SHEET_ID = "1H-xJutkK2lumjkKChyJj5Q18EW7wW-Ji6boq6GUlbHQ";   // ID de tu Google Sheet
@@ -263,8 +267,6 @@ function render(){
   const own = rows.filter(r => isOwn(r._sheet, r)).length;
   $("ptxt").textContent = `${sheet}: ${own} de ${rows.length} (${rows.length ? Math.round(own/rows.length*100) : 0}%)`;
   if (!ADMIN) $("cp").options[0].textContent = "Mi selección (" + picks.size + ")";
-  $("vSet").textContent = "· " + sheet; $("vRar").textContent = "· " + (rar || "Todas");
-  $("vOwn").textContent = "· " + ({all:"Todas", yes:"Las tengo", no:"Me faltan"}[f]); $("vQ").textContent = q ? "· “" + q + "”" : "";
   $("pfill").style.width = (rows.length ? own/rows.length*100 : 0) + "%";
   const list = rows.filter(r => {
     const o = isOwn(r._sheet, r);
