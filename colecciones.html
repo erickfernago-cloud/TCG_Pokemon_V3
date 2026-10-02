@@ -36,15 +36,15 @@ h1{font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-.02em;line
 <script>
 const BG = {"01": "linear-gradient(135deg,#e3a700,#2f4bff)", "02": "linear-gradient(135deg,#2f6bff,#1ec8ff)", "03": "linear-gradient(135deg,#1fa855,#8be37a)", "04": "linear-gradient(135deg,#8b3dff,#ff4fd8)", "05": "linear-gradient(135deg,#8a5a2b,#d9b26f)", "06": "linear-gradient(135deg,#4b5563,#9aa4c7)"};
 const IMG = ["157","149","158"].map(i => `<img alt="" loading="lazy" src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_${i}_R_EN_SM.png" onerror="this.remove()">`).join("");
-const SYM = {"02":"A","03":"B","04":"C","05":"★","06":"?"};
+const SYM = {"02":"R","03":"B","04":"C","05":"★","06":"?"};
 const svg = y => `<svg viewBox="0 0 100 140" width="100" height="140" aria-hidden="true"><rect x="4" y="4" width="92" height="132" rx="10" fill="rgba(7,10,22,.55)" stroke="#fff" stroke-opacity=".8" stroke-width="3"/><rect x="14" y="14" width="72" height="62" rx="6" fill="rgba(255,255,255,.18)"/><text x="50" y="58" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">${y}</text><rect x="14" y="88" width="50" height="6" rx="3" fill="rgba(255,255,255,.55)"/><rect x="14" y="100" width="72" height="4" rx="2" fill="rgba(255,255,255,.3)"/><rect x="14" y="110" width="60" height="4" rx="2" fill="rgba(255,255,255,.3)"/></svg>`;
 const C = [
-  ["01","30 Aniversario","Pokémon TCG 30th Celebration","coleccion.html",true],
-  ["02","Colección A","Catálogo en preparación.","catalogo.html?c=02",false],
-  ["03","Colección B","Catálogo en preparación.","catalogo.html?c=03",false],
-  ["04","Colección C","Catálogo en preparación.","catalogo.html?c=04",false],
-  ["05","Cartas antiguas","Cartas de ediciones anteriores.","catalogo.html?c=05",false],
-  ["06","Cartas sin identificar","Cartas por identificar o clasificar.","catalogo.html?c=06",false]
+  ["01","30 Aniversario","Pokémon TCG 30th Celebration","coleccion.html?c=01",true],
+  ["02","Rivales Predestinados","Catálogo en preparación.","coleccion.html?c=02",false],
+  ["03","Colección B","Catálogo en preparación.","coleccion.html?c=03",false],
+  ["04","Colección C","Catálogo en preparación.","coleccion.html?c=04",false],
+  ["05","Cartas antiguas","Cartas de ediciones anteriores.","coleccion.html?c=05",false],
+  ["06","Cartas sin identificar","Cartas por identificar o clasificar.","coleccion.html?c=06",false]
 ];
 document.getElementById("g").innerHTML = C.map(([n,t,d,h,ok]) =>
   `<a class="card" href="${h}"><div class="art" style="background:${BG[n]}">${n === "01" ? IMG : svg(SYM[n])}</div><span class="num" style="background:${BG[n]}">${n}</span><h2>${t}</h2><p>${d}</p><span class="chip${ok?" ok":""}">${ok?"Disponible":"Próximamente"}</span></a>`).join("");

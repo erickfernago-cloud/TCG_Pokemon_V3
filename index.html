@@ -115,7 +115,7 @@ $("f").addEventListener("submit", async ev => {
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || "Error");
     sessionStorage.setItem("tcg30c-admin", $("pw").value);
-    location.href = "coleccion.html";
+    location.href = "colecciones.html";
   }catch(e){ $("err").textContent = e.message; }
   $("ok").disabled = false;
 });

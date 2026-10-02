@@ -174,7 +174,19 @@
 </dialog>
 <script>
 const SHEET_ID = "1H-xJutkK2lumjkKChyJj5Q18EW7wW-Ji6boq6GUlbHQ";   // ID de tu Google Sheet
-const SHEETS = ["Set principal", "Secretas", "Classic Collection", "Energías"];
+// Colecciones: cada una usa una o varias pestañas de tu Google Sheet (el nombre de la pestaña debe ser exacto).
+const COLS = {
+  "01": {title:"Pokémon TCG · 30th Celebration", sheets:["Set principal","Secretas","Classic Collection","Energías"]},
+  "02": {title:"Rivales Predestinados", sheets:["Rivales Predestinados"]},
+  "03": {title:"Colección B", sheets:["Colección B"]},
+  "04": {title:"Colección C", sheets:["Colección C"]},
+  "05": {title:"Cartas antiguas", sheets:["Cartas antiguas"]},
+  "06": {title:"Cartas sin identificar", sheets:["Cartas sin identificar"]}
+};
+const CID = COLS[new URLSearchParams(location.search).get("c")] ? new URLSearchParams(location.search).get("c") : "01";
+const COL = COLS[CID], SHEETS = COL.sheets;
+document.title = "Mi colección · " + COL.title;
+document.querySelector("header h1").textContent = COL.title;
 // Imágenes desde tu carpeta pública de Google Drive (images_30Aniver).
 const DRIVE_FOLDER_ID = "1THRuNMTPR4wdwugrM1aZrFsk9_urnuFf";
 const DRIVE_API_KEY = "AIzaSyB6Fzuf9tb_YeJJbNcPBJAc0hEtP_oOvWs";   // clave de API de Google (restringida a Drive API y a tu dominio)
@@ -208,6 +220,7 @@ function csv(t){
   return out;
 }
 function imgFor(sheetName, r, i){
+  if (CID !== "01") return "";
   if (sheetName==="Classic Collection") return "CC"+(i+1);
   const n=String(r["N.º"]||"");
   if (n.endsWith("/128")) return n.split("/")[0];
@@ -218,7 +231,7 @@ function parseSheet(name, text){
   const t = Array.isArray(text) ? text : csv(text), heads = t[0] || [];
   return t.slice(1).map((cells,i)=>{
     const o={}; heads.forEach((h,c)=>o[h]=cells[c]||"");
-    o._img=imgFor(name,o,i); o._sheet=name; return o;
+    o._img=imgFor(name,o,i); o._sheet=name; o._url=/^https?:\/\//.test(o["Imagen"]||"") ? o["Imagen"] : ""; return o;
   }).filter(o=>Object.values(o).some(v=>v!==""));
 }
 const nameOf = r => r["Nombre"] || r["Carta"] || "";
@@ -271,11 +284,12 @@ async function load(){
       for (const n of SHEETS){
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(n)}&_=${Date.now()}`;
         const res = await fetch(url);
+        if (!res.ok && CID !== "01"){ data[n] = []; continue; }
         if (!res.ok) throw new Error("Google respondió " + res.status + " al pedir la hoja «" + n + "».");
         data[n] = parseSheet(n, await res.text());
       }
     }
-    await loadDrive();
+    if (CID === "01") await loadDrive();
     sheet = SHEETS[0];
     buildTabs(); render();
   }catch(e){
@@ -286,7 +300,7 @@ async function load(){
 }
 function buildTabs(){
   $("tabs").innerHTML = "";
-  [ALL, ...Object.keys(data)].forEach(n => {
+  [...(SHEETS.length > 1 ? [ALL] : []), ...Object.keys(data)].forEach(n => {
     const b = document.createElement("button");
     b.className = "tab"; b.role = "tab"; b.textContent = n;
     b.onclick = () => { sheet = n; fillRarity(); render(); };
@@ -312,11 +326,11 @@ function render(){
       (!q || (nameOf(r) + " " + numOf(r)).toLowerCase().includes(q));
   });
   const g = document.createElement("div"); g.className = "grid";
-  if (!list.length) g.innerHTML = '<div class="msg">Ninguna carta coincide con estos filtros.</div>';
+  if (!list.length) g.innerHTML = '<div class="msg">' + (rowsOf(sheet).length ? 'Ninguna carta coincide con estos filtros.' : 'Catálogo en preparación. Aún no hay cartas publicadas en esta colección.') + '</div>';
   list.forEach(r => {
     const o = isOwn(r._sheet, r), b = document.createElement("button");
     b.className = "card" + (o ? " own" : "") + (r._saving ? " saving" : "") + (!ADMIN && picks.has(keyOf(r._sheet, r)) ? " pick" : ""); b.setAttribute("aria-pressed", o);
-    b.innerHTML = `<div class="img">${r._img ? `<img loading="lazy" alt="" src="${driveMap[r._img] ? `https://drive.google.com/thumbnail?id=${driveMap[r._img]}&sz=w400` : IMG(r._img)}" data-fb="${IMG(r._img)}" onerror="if(this.dataset.fb&&!this.dataset.t){this.dataset.t=1;this.src=this.dataset.fb}else{this.replaceWith('Sin imagen')}">` : "Sin imagen"}</div>
+    b.innerHTML = `<div class="img">${r._url ? `<img loading="lazy" alt="" src="${r._url}">` : r._img ? `<img loading="lazy" alt="" src="${driveMap[r._img] ? `https://drive.google.com/thumbnail?id=${driveMap[r._img]}&sz=w400` : IMG(r._img)}" data-fb="${IMG(r._img)}" onerror="if(this.dataset.fb&&!this.dataset.t){this.dataset.t=1;this.src=this.dataset.fb}else{this.replaceWith('Sin imagen')}">` : "Sin imagen"}</div>
       <b>${nameOf(r)}</b><small>${numOf(r)}</small>${r["Rareza"] ? `<span class="tag">${r["Rareza"]}</span>` : ""}`;
     b.style.cursor = "pointer"; b.onclick = () => toggle(r);
     g.appendChild(b);
