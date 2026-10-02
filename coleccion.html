@@ -119,11 +119,16 @@
   dialog button{font:inherit;color:inherit;border:1px solid var(--line);background:transparent;padding:8px 16px;border-radius:8px;cursor:pointer}
   dialog button.go{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
   #rerr{color:#d64545;min-height:1.1em;font-size:.88rem;margin:0}
+  dialog .chk{display:flex;gap:10px;align-items:center;font-size:1rem;color:var(--ink);margin:8px 0}
+  dialog .chk input{width:auto;margin:0}
+  #cfge{color:#d64545;min-height:1.1em;font-size:.88rem;margin:4px 0}
+  #tray label.off{opacity:.4;cursor:not-allowed}
+  .logout#cfg{font-size:1rem;padding:3px 10px}
 </style>
 </head>
 <body>
 <header>
-  <div class="top"><a href="index.html" class="home">← Inicio</a><div class="session"><span id="role" class="role"></span><button id="out" class="logout" hidden>Cerrar sesión</button></div></div>
+  <div class="top"><a href="index.html" class="home">← Inicio</a><div class="session"><span id="role" class="role"></span><button id="cfg" class="logout" hidden aria-label="Opciones de compra, venta y cambio" title="Opciones de compra, venta y cambio">⚙</button><button id="out" class="logout" hidden>Cerrar sesión</button></div></div>
   <h1>Pokémon TCG · 30th Celebration</h1>
 </header>
 <div class="wrap">
@@ -159,6 +164,14 @@
   <p id="rerr" role="alert"></p>
   <div class="row"><button type="button" id="rx">Cancelar</button><button class="go" id="rs">Enviar por WhatsApp</button></div>
 </form></dialog>
+<dialog id="cfgd"><h2 id="cfgt"></h2>
+  <p class="hint">Elige qué opciones verán tus clientes en esta colección.</p>
+  <label class="chk"><input type="checkbox" id="c_comprar"> 🛒 Compra</label>
+  <label class="chk"><input type="checkbox" id="c_vender"> 💰 Venta</label>
+  <label class="chk"><input type="checkbox" id="c_cambiar"> 🔄 Cambio</label>
+  <p id="cfge" role="alert"></p>
+  <div class="row"><button type="button" id="cfgx">Cancelar</button><button type="button" id="cfgs" class="go">Guardar</button></div>
+</dialog>
 <script>
 const SHEET_ID = "1H-xJutkK2lumjkKChyJj5Q18EW7wW-Ji6boq6GUlbHQ";   // ID de tu Google Sheet
 const SHEETS = ["Set principal", "Secretas", "Classic Collection", "Energías"];
@@ -338,10 +351,24 @@ $("foot").textContent = ADMIN
   ? "Modo admin: toca una carta para marcarla o desmarcarla. Los cambios se guardan en tu Google Sheet."
   : "Toca las cartas que quieras seleccionar. Tu selección se guarda solo en este navegador";
 if (ADMIN){ $("out").hidden = false; $("out").onclick = () => { sessionStorage.removeItem("tcg30c-admin"); location.href = "index.html"; }; }
+let CFG = {};
+const okAct = (sn, a) => !(CFG[sn] && CFG[sn][a] === false);
+function pickedSheets(){ const o = new Set(); Object.keys(data).forEach(sn => data[sn].forEach(r => { if (picks.has(keyOf(sn, r))) o.add(sn); })); return [...o]; }
+async function loadCfg(){
+  try{ const j = await (await fetch(API, {method:"POST", body:JSON.stringify({action:"config"})})).json(); if (j.ok) CFG = j.config || {}; }catch(_){}
+  updTray();
+}
 function setTrayH(){ document.documentElement.style.setProperty("--trayh", ($("tray") && !$("tray").hidden ? $("tray").offsetHeight : 0) + "px"); }
 function updTray(){
   if (ADMIN) return;
   $("tray").hidden = !picks.size;
+  const NOAV = "Por ahora no hay compra, venta ni cambio disponible para esta selección.", sns = pickedSheets(); let any = false;
+  document.querySelectorAll("input[name=act]").forEach(i => {
+    const ok = sns.every(sn => okAct(sn, i.value));
+    i.disabled = !ok; i.parentElement.classList.toggle("off", !ok); i.parentElement.title = ok ? "" : "No disponible en esta colección";
+    if (!ok && i.checked) i.checked = false; any = any || ok;
+  });
+  if (picks.size && !any) $("trerr").textContent = NOAV; else if ($("trerr").textContent === NOAV) $("trerr").textContent = "";
   const m = $("tray").classList.contains("min");
   $("trmin").textContent = (m ? "▴ " : "▾ ") + "Mi selección (" + picks.size + ")" + (m ? " · Mostrar" : " · Minimizar");
   $("foot").textContent = picks.size ? "" : "Toca las cartas que quieras seleccionar. Tu selección se guarda solo en este navegador";
@@ -406,6 +433,27 @@ addEventListener("scroll", () => {
   const t = $("tray");
   if (t && !ADMIN && !t.hidden && !t.classList.contains("min") && d > 8){ t.classList.add("min"); $("trmin").setAttribute("aria-expanded", "false"); updTray(); }
 }, {passive:true});
+if (ADMIN){
+  $("cfg").hidden = false;
+  $("cfg").onclick = () => {
+    if (sheet === ALL){ alert("Elige una colección específica (no «Todo») para configurar sus opciones."); return; }
+    $("cfgt").textContent = "Opciones · " + sheet; $("cfge").textContent = "";
+    ["comprar","vender","cambiar"].forEach(a => $("c_" + a).checked = okAct(sheet, a));
+    $("cfgd").showModal();
+  };
+  $("cfgx").onclick = () => $("cfgd").close();
+  $("cfgs").onclick = async () => {
+    const v = {}; ["comprar","vender","cambiar"].forEach(a => v[a] = $("c_" + a).checked);
+    $("cfgs").disabled = true; $("cfge").textContent = "Guardando…";
+    try{
+      const j = await (await fetch(API, {method:"POST", body:JSON.stringify({action:"setConfig", password:PW, sheet, ...v})})).json();
+      if (!j.ok) throw new Error(j.error || "Error desconocido");
+      CFG[sheet] = v; $("cfgd").close();
+    }catch(e){ $("cfge").textContent = "No se pudo guardar: " + e.message; }
+    $("cfgs").disabled = false;
+  };
+}
+loadCfg();
 const topBtn = $("top");
 function chkTop(){ topBtn.hidden = !(scrollY > 300 && innerHeight + scrollY >= document.documentElement.scrollHeight - 160); setTrayH(); }
 addEventListener("scroll", chkTop, {passive:true}); addEventListener("resize", chkTop);
