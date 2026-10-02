@@ -378,14 +378,14 @@ else {
     const lines = picked().map(x => "• " + label(x));
     if (!lines.length){ $("rerr").textContent = "No hay cartas seleccionadas."; return; }
     const f = $("rf").value.split("-").reverse().join("-");
-    const n = lines.length, items = picked().map(x => "🃏 " + label(x));
-    const msg = "Hola, soy " + $("rn").value.trim() + " 👋\n"
-      + "Quisiera " + chosen() + (n === 1 ? " la siguiente carta:\n" : " las siguientes cartas:\n")
-      + items.join("\n") + "\n"
-      + "📧 Contacto: " + $("re").value.trim() + "\n"
-      + "📍 Entrega propuesta: " + f + ", en Metro Universidad de Chile, en horario de oficina.\n"
-      + ($("rt").value.trim() ? "📝 Notas: " + $("rt").value.trim() + "\n" : "")
-      + "¿Me confirmas si te acomoda la fecha y lugar de entrega?\n¡Gracias! 😊";
+    const n = lines.length, items = picked().map(x => "* " + label(x));
+    const msg = "Hola, soy " + $("rn").value.trim() + ".\n"
+      + "Quisiera " + chosen() + (n === 1 ? " la siguiente carta" : " las siguientes cartas") + " de la colección Pokémon TCG 30th Celebration:\n\n"
+      + items.join("\n") + "\n\n"
+      + "Contacto: " + $("re").value.trim() + "\n"
+      + "Entrega propuesta: " + f + ", en Metro Universidad de Chile, en horario de oficina.\n"
+      + ($("rt").value.trim() ? "Notas: " + $("rt").value.trim() + "\n" : "")
+      + "¿Me confirmas si te acomoda la fecha y el lugar de entrega?\nGracias.";
     window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
     $("rq").close(); picks.clear(); savePicks(); render();
   });
