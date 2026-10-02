@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#e9ecf3;--panel:#fff;--ink:#16203a;--muted:#5d6785;--line:#d3d8e6;--cobalt:#2f4bff;--gold:#e3a700;
+  :root{--bg:#070a16;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933;color-scheme:dark;
         --f:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
-  @media (prefers-color-scheme:dark){:root{--bg:#101427;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933}}
+  @media (prefers-color-scheme:dark){:root{--bg:#070a16;--panel:#1a2038;--ink:#eef0fa;--muted:#9aa4c7;--line:#2c3457;--cobalt:#7d92ff;--gold:#ffc933}}
   *{box-sizing:border-box}
   body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f);line-height:1.5;display:flex;flex-direction:column;align-items:center;padding:32px 20px 20px}
   main{margin:auto 0}
@@ -55,7 +55,7 @@
   a.opt.wa:hover{transform:translateY(-2px)}
   @media (max-width:900px){.opts{grid-template-columns:1fr}}
   @media (prefers-reduced-motion:reduce){a.opt.wa{transition:none}}
-  p.lead,.perks li,.opt p{text-align:justify}
+  p,li{text-align:justify}
 </style>
 </head>
 <body>
@@ -65,10 +65,10 @@
     <h1>Pokémon TCG <span>30th Celebration</span></h1>
     <p class="lead">Aquí podrás revisar mi catálogo de cartas Pokémon disponibles para venta, compra o intercambio, de una manera simple y ordenada.</p>
     <ul class="perks">
-      <li>🔎 Busca las cartas que necesitas para tu colección.</li>
-      <li>💰 Vende las cartas que ya no necesitas.</li>
-      <li>🔄 Cambia tus repetidas por aquellas que te faltan.</li>
-      <li>❤️ Colecciona y disfruta el mundo Pokémon a tu manera.</li>
+      <li>🔎 Busca las cartas que te faltan.</li>
+      <li>💰 Vende tus repetidas.</li>
+      <li>🔄 Cambia tus cartas por las que necesitas.</li>
+      <li>❤️ Completa tu colección a tu manera.</li>
     </ul>
     <a class="cta" href="colecciones.html">Ver colecciones →</a>
   </section>
